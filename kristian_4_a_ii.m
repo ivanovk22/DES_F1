@@ -3,7 +3,6 @@ close all % closes all open figures
 clc % cleares the command window
 
 % Parameters
-rng(42); % random seed
 % Poisson process with average 
 % lap finish car 1 average
 car1_lap_time = 1.5; %minutes
@@ -184,7 +183,7 @@ disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
 kmax = 100; % maximum event index
-N = 1; % number of simulations
+N = 1e5; % number of simulations
 
 % Simulations
 EE = zeros(N,kmax);
@@ -203,9 +202,10 @@ for i = 1:N,
     for j = 1:m,
         eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
     end
-    V
+    
     % Simulation
     [E,X,T] = simprobdes(model,V);
+ 
     
     % Check
     if T(end) < tstar

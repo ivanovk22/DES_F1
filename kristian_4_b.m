@@ -16,7 +16,7 @@ A3 = 0.35; B3 = 0.45; % minutes
 car1_pit_time = 15; %minutes
 % need to pit for car 2 average
 car2_pit_time = 15; %minutes
-A2 = 14; B2 = 16 % minutes
+A2 = 14; B2 = 16; % minutes
 
 
 p = 1/3; %probability of car 1 starting ahead
@@ -27,7 +27,7 @@ m = 5; % m is the number of events
 n = 18; % n is the number of states
 ename = {'a1','a2','e1','e2','d'}; % original names of the events
 xname = {'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18'}; % original names of the states
-tstar = 80; % time of interest
+tstar = 20; % time of interest
 
 % Definition of the logical model
 model.m = m;
@@ -146,18 +146,18 @@ model.p(:,18,5) = [0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 model.p0 = pi0'; % initial state probabilities (vector n x 1)
 
 % Definition of the stochastic clock structure
-F{1} = 'unifrnd(A1,B1,1,L)'; % L values drawn from U(A,B)
-F{2} = 'unifrnd(A1,B1,1,L)'; % L values drawn from Exp(1/lambda)
-F{3} = 'unifrnd(A2,B2,1,L)'; % L values drawn from Exp(1/mu)
-F{4} = 'unifrnd(A2,B2,1,L)'; % L values drawn from Exp(1/mu)
-F{5} = 'unifrnd(A3,B3,1,L)'; % L values drawn from Exp(1/mu)
+F{1} = 'unifrnd(A1,B1,1,L)'; % L values drawn from U(A1,B1)
+F{2} = 'unifrnd(A1,B1,1,L)'; % L values drawn from U(A1,B1)
+F{3} = 'unifrnd(A2,B2,1,L)'; % L values drawn from U(A2,B2)
+F{4} = 'unifrnd(A2,B2,1,L)'; % L values drawn from U(A2,B2)
+F{5} = 'unifrnd(A3,B3,1,L)'; % L values drawn from U(A3,B3)
 
 % MULTIPLE SIMULATIONS
 disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
-kmax = 120; % maximum event index
-N = 1e5; % number of simulations
+kmax = 100; % maximum event index
+N = 1000000; % number of simulations
 
 % Simulations
 EE = zeros(N,kmax);
@@ -211,7 +211,7 @@ sum(px_est)
 
 
 % Plot of state probabilities vs time
-Tspan = 0:0.01:200; % grid of time values
+Tspan = 0:0.01:100; % grid of time values
 L = length(Tspan);
 nx = zeros(L,n);
 r = (1:N)';
