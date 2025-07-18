@@ -184,53 +184,151 @@ disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
 kmax = 100; % maximum event index
-N = 1; % number of simulations
+N = 1000; % number of simulations(batches)
+M = 100; % number of experiments per simulation
 
 % Simulations
-EE = zeros(N,kmax);
-XX = zeros(N,kmax+1);
-TT = zeros(N,kmax+1);
+
+
+% Storage for batches results
+nx_batches = zeros(n, kmax+1, N); % states count per batch (averaged over simulations)
+ne_batches = zeros(m, kmax, N);   % events count per batch (averaged over simulations)
+
+
 disp(' Simulations in progress...')
 for i = 1:N,
     % Progress
     if ismember(i,0:round(N/200):N),
         disp([ '   Progress ' num2str(i/N*100) '%' ])
     end
-    
-    % Definition of the clock sequences
-    L = kmax; % length of the clock sequences
-    V = [];
-    for j = 1:m,
-        eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+    nx = zeros(n,kmax+1); % state counter
+    ne = zeros(m,kmax); % event counter
+    for sim_i = 1:M
+        % Definition of the clock sequences
+        L = kmax; % length of the clock sequences
+        V = [];
+        for j = 1:m,
+            eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+        end
+        
+        % Simulation
+        [E,X,T] = simprobdes(model,V);
+        
+        % Counting
+        for x = 1:n,
+            nx(x,:) = nx(x,:)+(X(1:kmax+1)==x);
+        end
+        for e = 1:m,
+            ne(e,:) = ne(e,:)+(E(1:kmax)==e);
+        end
     end
-    V
-    % Simulation
-    [E,X,T] = simprobdes(model,V);
+
+    % Average over N simulations for this batch
+    nx_batches(:, :, i) = nx / M;
+    ne_batches(:, :, i) = ne / M;
     
-    % Check
-    if T(end) < tstar
-        error('Insufficient number of events, increase ''kmax''')
-    end
-    
-    % Store the simulation results
-    EE(i,:) = E;
-    XX(i,:) = X;
-    TT(i,:) = T;
 end
 disp(' Simulations completed')
+% State probabilities: mean and variance (size: n x (kmax+1))
+px_mean = mean(nx_batches, 3)
+px_var  = var(nx_batches, 0, 3);
 
-% Counting how many times the system is in each state at time tstar
-tol = 1e-10; % tolerance for time comparisons
-nx = zeros(1,n);
-r = (1:N)';
-c = sum(TT <= tstar+tol,2);
-ind = (c - 1) * N + r; % linear index
-for x = 1:n
-    nx(1,x) = sum(XX(ind) == x);
+% Event probabilities: mean and variance (size: m x kmax)
+pe_mean = mean(ne_batches, 3)
+pe_var  = var(ne_batches, 0, 3);
+figure;
+for state = 1:n
+    subplot(n,1,state)
+    plot(0:kmax, px_mean(state,:), 'b', 'LineWidth', 1.5); hold on;
+    plot(0:kmax, px_mean(state,:) + sqrt(px_var(state,:)), 'r--');
+    plot(0:kmax, px_mean(state,:) - sqrt(px_var(state,:)), 'r--');
+    title(['State ' num2str(state) ' Probability with ±1 std']);
+    xlabel('Event index k'); ylabel('Probability');
+    grid on;
 end
 
-% Estimating state probabilities at time tstar
-px_est = nx/N
-sum(px_est)
 
-error = abs(pi_tstar - px_est)
+% Print of the results
+i = 1;
+while 1,
+    if (kmax/(10^(i-1)) < 10),
+        break
+    else
+        i = i+1;
+    end
+end
+
+disp(' ')
+disp(' STATE PROBABILITIES (estimated)')
+xcolumn = [];
+for t = 1:kmax+1,
+    j = 1;
+    while 1,
+        if ((t-1)/(10^(j-1)) < 10),
+            break
+        else
+            j = j+1;
+        end
+    end
+    xcolumn(t,:) = [ repmat(' ',1,i-j) ' X' num2str(t-1) ': ' ];
+end
+disp([ xcolumn num2str(px_mean') ])
+
+disp(' ')
+disp(' EVENT PROBABILITIES (estimated)')
+ecolumn = [];
+for t = 1:kmax,
+    j = 1;
+    while 1,
+        if (t/(10^(j-1)) < 10),
+            break
+        else
+            j = j+1;
+        end
+    end
+    ecolumn(t,:) = [ repmat(' ',1,i-j) ' E' num2str(t) ': ' ];
+end
+disp([ ecolumn num2str(pe_mean') ])
+disp(' ')
+
+% Plots
+figure, % state probabilities
+str = 'plot(';
+for x = 1:n,
+    str = [ str '0:kmax,px_mean(' num2str(x) ',:),' ];
+end
+str = [ str(1:end-1) ')' ];
+eval(str)
+title('state probabilities')
+xlabel('k')
+ylabel('P(X_k = x)')
+set(gca,'XTick',0:kmax,'XTickLabel',0:kmax)
+xlim([ 0 kmax ])
+str = 'legend(';
+for x = 1:n,
+    str = [ str '''P(X_k = ' xname{x} ')'',' ];
+end
+str = [ str(1:end-1) ')' ];
+eval(str)
+
+figure, % event probabilities
+str = 'plot(';
+for e = 1:m,
+    str = [ str '1:kmax,pe_mean(' num2str(e) ',:),' ];
+end
+str = [ str(1:end-1) ')' ];
+eval(str)
+title('event probabilities')
+xlabel('k')
+ylabel('P(E_k = e)')
+set(gca,'XTick',0:kmax,'XTickLabel',0:kmax)
+xlim([ 1 kmax ])
+str = 'legend(';
+for e = 1:m,
+    str = [ str '''P(E_k = ' ename{e} ')'',' ];
+end
+str = [ str(1:end-1) ')' ];
+eval(str)
+
+steady_px_est = mean(px_mean(:, kmax-10:kmax), 2)
+
