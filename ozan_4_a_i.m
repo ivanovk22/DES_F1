@@ -21,7 +21,7 @@ sigma = 1/pit_time; % [finish/min]
 mu_1 = 1/car1_pit_time; % [pit_needed/min]
 mu_2 = 1/car2_pit_time; % [pit_needed/min]
 p = 1/3; %probability of car 1 starting ahead
-pi0 = [ (1-p) p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
+pi0 = [ p (1-p) 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
 tstar = 20; % time of interest
 
 % Transition rate matrix

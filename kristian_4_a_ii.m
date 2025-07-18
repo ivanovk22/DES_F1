@@ -24,6 +24,31 @@ p = 1/3; %probability of car 1 starting ahead
 pi0 = [ p (1-p) 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
 tstar = 20; % time of interest
 
+
+% Transition rate matrix
+Q = [-(lambda_1+lambda_2+mu_1+mu_2)	lambda_2	lambda_1	mu_1	mu_2	0	0	0	0	0	0	0	0	0	0	0	0	0;
+     lambda_1	-(lambda_1+lambda_2+mu_1+mu_2)	0	0	0	mu_1	mu_2	lambda_2	0	0	0	0	0	0	0	0	0	0;
+     lambda_2	0	-(lambda_2+mu_2)	0	0	0	0	0	mu_2	0	0	0	0	0	0	0	0	0;
+     0	0	0	-(lambda_1+lambda_2)	0	lambda_2	0	0	0	0	0	0	0	0	0	lambda_1	0	0;
+     0	0	0	0	-(lambda_1+lambda_2)	0	0	0	lambda_1	0	0	lambda_2	0	0	0	0	0	0;
+     0	0	0	0	0	-(lambda_1+lambda_2)	0	0	0	0	lambda_1	0	0	lambda_2	0	0	0	0;
+     0	0	0	0	lambda_1	0	-(lambda_1+lambda_2)	0	0	0	0	0	0	0	0	0	lambda_2	0;
+     0	lambda_1	0	0	0	0	0	-(lambda_1+mu_1)	0	0	0	0	0	mu_1	0	0	0	0;
+     0	0	0	0	0	0	0	0	-lambda_2	lambda_2	0	0	0	0	0	0	0	0;
+     sigma	0	0	0	0	0	0	0	0	-(sigma+lambda_1)	0	0	0	0	lambda_1	0	0	0;
+     sigma	0	0	0	0	0	0	0	0	0	-(sigma+lambda_2)	0	lambda_2	0	0	0	0	0;
+     0	sigma	0	0	0	0	0	0	0	lambda_1	0	-(sigma+lambda_1)	0	0	0	0	0	0;
+     0	sigma	0	0	0	0	0	0	0	0	0	0	-(sigma+lambda_2)	0	0	0	0	lambda_2;
+     0	0	0	0	0	0	0	0	0	0	0	0	lambda_1	-lambda_1	0	0	0	0;
+     0	0	sigma	0	0	0	0	0	0	0	0	0	0	0	-sigma	0	0	0;
+     0	0	sigma	0	0	0	0	0	0	0	lambda_2	0	0	0	0	-(sigma+lambda_2)	0	0;
+     0	0	0	0	0	0	0	sigma	0	0	0	lambda_1	0	0	0	0	-(sigma+lambda_1)	0;
+     0	0	0	0	0	0	0	sigma	0	0	0	0	0	0	0	0	0	-sigma];
+
+% State probabilities at time tstar
+pi_tstar = pi0*expm(Q*tstar)
+sum(pi_tstar)
+
 % Definition of parameters
 m = 5; % m is the number of events
 n = 18; % n is the number of states
@@ -85,7 +110,7 @@ model.p(:,8,4) = NaN(size(model.p, 1), 1);
 model.p(:,8,5) = NaN(size(model.p, 1), 1);
 
 model.p(:,9,1) = NaN(size(model.p, 1), 1);
-model.p(:,9,2) = [0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+model.p(:,9,2) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0];
 model.p(:,9,3) = NaN(size(model.p, 1), 1);
 model.p(:,9,4) = NaN(size(model.p, 1), 1);
 model.p(:,9,5) = NaN(size(model.p, 1), 1);
@@ -132,7 +157,7 @@ model.p(:,16,3) = NaN(size(model.p, 1), 1);
 model.p(:,16,4) = NaN(size(model.p, 1), 1);
 model.p(:,16,5) = [0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 
-model.p(:,17,1) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0];
+model.p(:,17,1) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0];
 model.p(:,17,2) = NaN(size(model.p, 1), 1);
 model.p(:,17,3) = NaN(size(model.p, 1), 1);
 model.p(:,17,4) = NaN(size(model.p, 1), 1);
@@ -157,8 +182,8 @@ F{5} = 'exprnd(1/sigma,1,L)'; % L values drawn from Exp(1/mu)
 disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
-kmax = 50; % maximum event index
-N = 1e6; % number of simulations
+kmax = 60; % maximum event index
+N = 3e5; % number of simulations
 
 % Simulations
 EE = zeros(N,kmax);
@@ -206,3 +231,5 @@ end
 % Estimating state probabilities at time tstar
 px_est = nx/N
 sum(px_est)
+
+error = abs(pi_tstar - px_est)
