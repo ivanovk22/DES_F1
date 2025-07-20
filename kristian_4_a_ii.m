@@ -22,7 +22,7 @@ mu_1 = 1/car1_pit_time; % [pit_needed/min]
 mu_2 = 1/car2_pit_time; % [pit_needed/min]
 p = 1/3; %probability of car 1 starting ahead
 pi0 = [ p (1-p) 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
-tstar = 30; % time of interest
+tstar = 20; % time of interest
 
 
 % Transition rate matrix
@@ -183,7 +183,7 @@ disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
 kmax = 100; % maximum event index
-N = 1e5; % number of simulations
+N = 1e6; % number of simulations
 
 % Simulations
 EE = zeros(N,kmax);

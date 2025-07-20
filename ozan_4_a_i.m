@@ -48,7 +48,7 @@ Q = [-(lambda_1+lambda_2+mu_1+mu_2)	lambda_2	lambda_1	mu_1	mu_2	0	0	0	0	0	0	0	0	
 pi_tstar = pi0*expm(Q*tstar)
 sum(pi_tstar)
 % Plot of state probabilities vs time
-T = 0:0.01:50;
+T = 0:0.01:30;
 PI = [];
 for t = T
     PI = [ PI ; pi0*expm(Q*t) ];
