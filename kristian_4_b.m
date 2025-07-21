@@ -155,37 +155,126 @@ a_d = 0.35;
 b_d = 2;
 lambda_d = 4;
 F{5} = ['truncexprnd(', num2str(lambda_d), ',', num2str(a_d), ',', num2str(b_d), ',L)']; 
+tstar = 8000;
 
+% MULTIPLE SIMULATIONS
+disp('MULTIPLE SIMULATIONS'), disp(' ')
 
-% Definition of the clock sequences
-L = 1000000; % length of the clock sequences
-V = [];
-for j = 1:m,
-    eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+% Parameters of the simulations
+kmax = 12000; % maximum event index
+N = 1e4; % number of simulations
+
+% Simulations
+EE = zeros(N,kmax);
+XX = zeros(N,kmax+1);
+TT = zeros(N,kmax+1);
+disp(' Simulations in progress...')
+for i = 1:N,
+    % Progress
+    if ismember(i,0:round(N/200):N),
+        disp([ '   Progress ' num2str(i/N*100) '%' ])
+    end
+    
+    % Definition of the clock sequences
+    L = kmax; % length of the clock sequences
+    V = [];
+    for j = 1:m,
+        eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+    end
+    
+    % Simulation
+    [E,X,T] = simprobdes(model,V);
+ 
+    
+    % Check
+    if T(end) < tstar
+        error('Insufficient number of events, increase ''kmax''')
+    end
+    
+    % Store the simulation results
+    EE(i,:) = E;
+    XX(i,:) = X;
+    TT(i,:) = T;
 end
-[E,X,T] = simprobdes(model, V);  % One long trajectory
+disp(' Simulations completed')
 
-cumulative_time = zeros(n, 1);
-cumulative_fraction = [];
-
-for i = 1:length(X)-1
-    dt = T(i+1) - T(i);
-    cumulative_time(X(i)) = cumulative_time(X(i)) + dt;
-    cumulative_fraction(:,i) = cumulative_time / sum(cumulative_time);
+% Counting how many times the system is in each state at time tstar
+tol = 1e-10; % tolerance for time comparisons
+nx = zeros(1,n);
+r = (1:N)';
+c = sum(TT <= tstar+tol,2);
+ind = (c - 1) * N + r; % linear index
+for x = 1:n
+    nx(1,x) = sum(XX(ind) == x)
 end
+format long
+% Estimating state probabilities at time tstar
+px_est = nx/N
+sum(px_est)
 
-figure;
-plot(cumulative_fraction');
+
+% Plot of state probabilities vs time
+Tspan = 7000:0.1:10000; % grid of time values
+L = length(Tspan);
+nx = zeros(L,n);
+r = (1:N)';
+for j = 1:L
+    c = sum(TT <= Tspan(j)+tol,2);
+    ind = (c - 1) * N + r; % linear index
+    for x = 1:n
+        nx(j,x) = sum(XX(ind) == x); % counting
+    end
+end
+PI_est = nx/N; % Estimating state probabilities 
+figure
+plot(Tspan,PI_est,tstar,px_est,'*')
+title('Estimated state probabilities vs time')
+xlabel('t [h]')
 legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
     '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
     '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
     '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
-xlabel('Step index');
-title('State probabilities over time');
-final_probs = cumulative_fraction(:,end);
-disp('Estimated steady-state probabilities:');
-disp(final_probs');
 
-disp('State visit counts:')
-histcounts(X, 1:19)  
+
+
+
+
+
+
+
+
+
+
+
+% % Definition of the clock sequences
+% L = 1000000; % length of the clock sequences
+% V = [];
+% for j = 1:m,
+%     eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+% end
+% [E,X,T] = simprobdes(model, V);  % One long trajectory
+% 
+% cumulative_time = zeros(n, 1);
+% cumulative_fraction = [];
+% 
+% for i = 1:length(X)-1
+%     dt = T(i+1) - T(i);
+%     cumulative_time(X(i)) = cumulative_time(X(i)) + dt;
+%     cumulative_fraction(:,i) = cumulative_time / sum(cumulative_time);
+% end
+% 
+% figure;
+% plot(cumulative_fraction');
+% legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
+%     '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
+%     '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
+%     '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
+% xlabel('Step index');
+% title('State probabilities over time');
+% final_probs = cumulative_fraction(:,end);
+% disp('Estimated steady-state probabilities:');
+% disp(final_probs');
+% 
+% disp('State visit counts:')
+% histcounts(X, 1:19)  
 
