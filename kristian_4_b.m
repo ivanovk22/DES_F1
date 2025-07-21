@@ -155,13 +155,13 @@ a_d = 0.35;
 b_d = 2;
 lambda_d = 4;
 F{5} = ['truncexprnd(', num2str(lambda_d), ',', num2str(a_d), ',', num2str(b_d), ',L)']; 
-tstar = 8000;
+tstar = 800;
 
 % MULTIPLE SIMULATIONS
 disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
-kmax = 12000; % maximum event index
+kmax = 10000; % maximum event index
 N = 1e4; % number of simulations
 
 % Simulations
@@ -214,7 +214,7 @@ sum(px_est)
 
 
 % Plot of state probabilities vs time
-Tspan = 7000:0.1:10000; % grid of time values
+Tspan = 0:0.1:1000; % grid of time values
 L = length(Tspan);
 nx = zeros(L,n);
 r = (1:N)';
