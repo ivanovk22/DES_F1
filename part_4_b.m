@@ -1,6 +1,6 @@
-clear all % clears variables and functions from memory
-close all % closes all open figures
-clc % cleares the command window
+% clear all % clears variables and functions from memory
+% close all % closes all open figures
+% clc % cleares the command window
 
 % Parameters
 % Poisson process with average 
@@ -8,46 +8,21 @@ clc % cleares the command window
 car1_lap_time = 1.5; %minutes
 % lap finish car 2 average 
 car2_lap_time = 1.5; %minutes
+A1 = 1.4; B1 = 1.6; % minutes
 % pit finish average
-pit_time = 0.4 %minutes
-% need to pit for car 1 average
-car1_pit_time = 15 %minutes
-% need to pit for car 2 average
-car2_pit_time = 15 %minutes
 
-lambda_1 = 1/car1_lap_time; % [laps/min]
-lambda_2 = 1/car2_lap_time; % [laps/min]
-sigma = 1/pit_time; % [finish/min]
-mu_1 = 1/car1_pit_time; % [pit_needed/min]
-mu_2 = 1/car2_pit_time; % [pit_needed/min]
+
+pit_time = 0.4; %minutes
+% A3 = 0.35; B3 = 0.45; % minutes
+% need to pit for car 1 average
+car1_pit_time = 15; %minutes
+% need to pit for car 2 average
+car2_pit_time = 15; %minutes
+A2 = 14; B2 = 16; % minutes
+
+
 p = 1/3; %probability of car 1 starting ahead
 pi0 = [ p (1-p) 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
-tstar = 20; % time of interest
-
-
-% Transition rate matrix
-Q = [-(lambda_1+lambda_2+mu_1+mu_2)	lambda_2	lambda_1	mu_1	mu_2	0	0	0	0	0	0	0	0	0	0	0	0	0;
-     lambda_1	-(lambda_1+lambda_2+mu_1+mu_2)	0	0	0	mu_1	mu_2	lambda_2	0	0	0	0	0	0	0	0	0	0;
-     lambda_2	0	-(lambda_2+mu_2)	0	0	0	0	0	mu_2	0	0	0	0	0	0	0	0	0;
-     0	0	0	-(lambda_1+lambda_2)	0	lambda_2	0	0	0	0	0	0	0	0	0	lambda_1	0	0;
-     0	0	0	0	-(lambda_1+lambda_2)	0	0	0	lambda_1	0	0	lambda_2	0	0	0	0	0	0;
-     0	0	0	0	0	-(lambda_1+lambda_2)	0	0	0	0	lambda_1	0	0	lambda_2	0	0	0	0;
-     0	0	0	0	lambda_1	0	-(lambda_1+lambda_2)	0	0	0	0	0	0	0	0	0	lambda_2	0;
-     0	lambda_1	0	0	0	0	0	-(lambda_1+mu_1)	0	0	0	0	0	mu_1	0	0	0	0;
-     0	0	0	0	0	0	0	0	-lambda_2	lambda_2	0	0	0	0	0	0	0	0;
-     sigma	0	0	0	0	0	0	0	0	-(sigma+lambda_1)	0	0	0	0	lambda_1	0	0	0;
-     sigma	0	0	0	0	0	0	0	0	0	-(sigma+lambda_2)	0	lambda_2	0	0	0	0	0;
-     0	sigma	0	0	0	0	0	0	0	lambda_1	0	-(sigma+lambda_1)	0	0	0	0	0	0;
-     0	sigma	0	0	0	0	0	0	0	0	0	0	-(sigma+lambda_2)	0	0	0	0	lambda_2;
-     0	0	0	0	0	0	0	0	0	0	0	0	lambda_1	-lambda_1	0	0	0	0;
-     0	0	sigma	0	0	0	0	0	0	0	0	0	0	0	-sigma	0	0	0;
-     0	0	sigma	0	0	0	0	0	0	0	lambda_2	0	0	0	0	-(sigma+lambda_2)	0	0;
-     0	0	0	0	0	0	0	sigma	0	0	0	lambda_1	0	0	0	0	-(sigma+lambda_1)	0;
-     0	0	0	0	0	0	0	sigma	0	0	0	0	0	0	0	0	0	-sigma];
-
-% State probabilities at time tstar
-pi_tstar = pi0*expm(Q*tstar)
-sum(pi_tstar)
 
 % Definition of parameters
 m = 5; % m is the number of events
@@ -110,7 +85,7 @@ model.p(:,8,4) = NaN(size(model.p, 1), 1);
 model.p(:,8,5) = NaN(size(model.p, 1), 1);
 
 model.p(:,9,1) = NaN(size(model.p, 1), 1);
-model.p(:,9,2) = [0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+model.p(:,9,2) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0];
 model.p(:,9,3) = NaN(size(model.p, 1), 1);
 model.p(:,9,4) = NaN(size(model.p, 1), 1);
 model.p(:,9,5) = NaN(size(model.p, 1), 1);
@@ -157,7 +132,7 @@ model.p(:,16,3) = NaN(size(model.p, 1), 1);
 model.p(:,16,4) = NaN(size(model.p, 1), 1);
 model.p(:,16,5) = [0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 
-model.p(:,17,1) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0];
+model.p(:,17,1) = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0];
 model.p(:,17,2) = NaN(size(model.p, 1), 1);
 model.p(:,17,3) = NaN(size(model.p, 1), 1);
 model.p(:,17,4) = NaN(size(model.p, 1), 1);
@@ -172,18 +147,22 @@ model.p(:,18,5) = [0; 0; 0; 0; 0; 0; 0; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 model.p0 = pi0'; % initial state probabilities (vector n x 1)
 
 % Definition of the stochastic clock structure
-F{1} = 'exprnd(1/lambda_1,1,L)'; % L values drawn from Exp(1/lambda)
-F{2} = 'exprnd(1/lambda_2,1,L)'; % L values drawn from Exp(1/lambda)
-F{3} = 'exprnd(1/mu_1,1,L)'; % L values drawn from Exp(1/mu)
-F{4} = 'exprnd(1/mu_2,1,L)'; % L values drawn from Exp(1/mu)
-F{5} = 'exprnd(1/sigma,1,L)'; % L values drawn from Exp(1/mu)
+F{1} = 'unifrnd(A1,B1,1,L)'; % L values drawn from U(A1,B1)
+F{2} = 'unifrnd(A1,B1,1,L)'; % L values drawn from U(A1,B1)
+F{3} = 'unifrnd(A2,B2,1,L)'; % L values drawn from U(A2,B2)
+F{4} = 'unifrnd(A2,B2,1,L)'; % L values drawn from U(A2,B2)
+a_d = 0.35;
+b_d = 2;
+lambda_d = 4;
+F{5} = ['truncexprnd(', num2str(lambda_d), ',', num2str(a_d), ',', num2str(b_d), ',L)']; 
+tstar = 800;
 
 % MULTIPLE SIMULATIONS
 disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
-kmax = 50; % maximum event index
-N = 1e5; % number of simulations
+kmax = 10000; % maximum event index
+N = 1e4; % number of simulations
 
 % Simulations
 EE = zeros(N,kmax);
@@ -205,6 +184,7 @@ for i = 1:N,
     
     % Simulation
     [E,X,T] = simprobdes(model,V);
+ 
     
     % Check
     if T(end) < tstar
@@ -225,11 +205,76 @@ r = (1:N)';
 c = sum(TT <= tstar+tol,2);
 ind = (c - 1) * N + r; % linear index
 for x = 1:n
-    nx(1,x) = sum(XX(ind) == x);
+    nx(1,x) = sum(XX(ind) == x)
 end
-
+format long
 % Estimating state probabilities at time tstar
 px_est = nx/N
 sum(px_est)
 
-error = abs(pi_tstar - px_est;
+
+% Plot of state probabilities vs time
+Tspan = 0:0.1:1000; % grid of time values
+L = length(Tspan);
+nx = zeros(L,n);
+r = (1:N)';
+for j = 1:L
+    c = sum(TT <= Tspan(j)+tol,2);
+    ind = (c - 1) * N + r; % linear index
+    for x = 1:n
+        nx(j,x) = sum(XX(ind) == x); % counting
+    end
+end
+PI_est = nx/N; % Estimating state probabilities 
+figure
+plot(Tspan,PI_est,tstar,px_est,'*')
+title('Estimated state probabilities vs time')
+xlabel('t [h]')
+legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
+    '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
+    '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
+    '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
+
+
+
+
+
+
+
+
+
+
+
+
+% % Definition of the clock sequences
+% L = 1000000; % length of the clock sequences
+% V = [];
+% for j = 1:m,
+%     eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+% end
+% [E,X,T] = simprobdes(model, V);  % One long trajectory
+% 
+% cumulative_time = zeros(n, 1);
+% cumulative_fraction = [];
+% 
+% for i = 1:length(X)-1
+%     dt = T(i+1) - T(i);
+%     cumulative_time(X(i)) = cumulative_time(X(i)) + dt;
+%     cumulative_fraction(:,i) = cumulative_time / sum(cumulative_time);
+% end
+% 
+% figure;
+% plot(cumulative_fraction');
+% legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
+%     '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
+%     '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
+%     '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
+% xlabel('Step index');
+% title('State probabilities over time');
+% final_probs = cumulative_fraction(:,end);
+% disp('Estimated steady-state probabilities:');
+% disp(final_probs');
+% 
+% disp('State visit counts:')
+% histcounts(X, 1:19)  
+
