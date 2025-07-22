@@ -161,7 +161,7 @@ tstar = 800;
 disp('MULTIPLE SIMULATIONS'), disp(' ')
 
 % Parameters of the simulations
-kmax = 10000; % maximum event index
+kmax = 1500; % maximum event index
 N = 1e4; % number of simulations
 
 % Simulations
@@ -205,7 +205,7 @@ r = (1:N)';
 c = sum(TT <= tstar+tol,2);
 ind = (c - 1) * N + r; % linear index
 for x = 1:n
-    nx(1,x) = sum(XX(ind) == x)
+    nx(1,x) = sum(XX(ind) == x);
 end
 format long
 % Estimating state probabilities at time tstar
@@ -229,7 +229,7 @@ PI_est = nx/N; % Estimating state probabilities
 figure
 plot(Tspan,PI_est,tstar,px_est,'*')
 title('Estimated state probabilities vs time')
-xlabel('t [h]')
+xlabel('t [min]')
 legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
     '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
     '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
@@ -243,38 +243,35 @@ legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
 
 
 
+% Definition of the clock sequences
+L = 1000000; % length of the clock sequences
+V = [];
+for j = 1:m,
+    eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
+end
+[E,X,T] = simprobdes(model, V);  % One long trajectory
 
+cumulative_time = zeros(n, 1);
+cumulative_fraction = [];
 
+for i = 1:length(X)-1
+    dt = T(i+1) - T(i);
+    cumulative_time(X(i)) = cumulative_time(X(i)) + dt;
+    cumulative_fraction(:,i) = cumulative_time / sum(cumulative_time);
+end
 
-% % Definition of the clock sequences
-% L = 1000000; % length of the clock sequences
-% V = [];
-% for j = 1:m,
-%     eval([ 'V(' num2str(j) ',:) = ' F{j} ';' ]);
-% end
-% [E,X,T] = simprobdes(model, V);  % One long trajectory
-% 
-% cumulative_time = zeros(n, 1);
-% cumulative_fraction = [];
-% 
-% for i = 1:length(X)-1
-%     dt = T(i+1) - T(i);
-%     cumulative_time(X(i)) = cumulative_time(X(i)) + dt;
-%     cumulative_fraction(:,i) = cumulative_time / sum(cumulative_time);
-% end
-% 
-% figure;
-% plot(cumulative_fraction');
-% legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
-%     '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
-%     '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
-%     '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
-% xlabel('Step index');
-% title('State probabilities over time');
-% final_probs = cumulative_fraction(:,end);
-% disp('Estimated steady-state probabilities:');
-% disp(final_probs');
-% 
-% disp('State visit counts:')
-% histcounts(X, 1:19)  
+figure;
+plot(cumulative_fraction');
+legend('\pi_1(t)','\pi_2(t)','\pi_3(t)','\pi_4(t)','\pi_5(t)',...
+    '\pi_6(t)', '\pi_7(t)', '\pi_8(t)', '\pi_9(t)','\pi_1_0(t)',...
+    '\pi_1_1(t)','\pi_1_2(t)','\pi_1_3(t)','\pi_1_4(t)','\pi_1_5(t)',...
+    '\pi_1_6(t)','\pi_1_7(t)', '\pi_1_8(t)')
+xlabel('Step index');
+title('State probabilities over time');
+final_probs = cumulative_fraction(:,end);
+disp('Estimated steady-state probabilities:');
+disp(final_probs');
+
+disp('State visit counts:')
+histcounts(X, 1:19)  
 
